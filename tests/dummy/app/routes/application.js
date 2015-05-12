@@ -5,13 +5,10 @@ const a = A;
 export default Ember.Route.extend({
   model() {
     return {
-      items: a(['Uno', 'Dos', 'Tres', 'Cuatro', 'Cinco'])
+      vertical: a(['Uno', 'Dos', 'Tres', 'Cuatro', 'Cinco']),
+      horizontal: a(['Ein', "Zwei", "Drei", "Vier", "Funf"])
     };
+    
   },
 
-  actions: {
-    update(newOrder) {
-      this.set('currentModel.items', a(newOrder));
-    }
-  }
 });
