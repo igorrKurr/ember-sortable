@@ -131,7 +131,7 @@ export default Component.extend({
         items.invoke('thaw');
       });
     });
-      console.log('DSKDJSDUHWUWUWYU', this.get("onChange"))
+
     this.sendAction('onChange', models);
   }
 });
