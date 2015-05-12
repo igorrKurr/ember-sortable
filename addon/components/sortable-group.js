@@ -5,7 +5,7 @@ const a = A;
 
 export default Component.extend({
   layout: layout,
-  defaultDirection: 'y',
+
   direction: 'y',
   /**
     @property items
