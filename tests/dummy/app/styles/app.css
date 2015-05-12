@@ -15,7 +15,7 @@
 }
 
 .ember-application li {
-  display: block;
+  display: inline-block;
   position: relative;
   background: pink;
   margin: 4px 0;

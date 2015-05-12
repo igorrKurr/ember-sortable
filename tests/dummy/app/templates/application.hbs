@@ -3,11 +3,10 @@
 </header>
 
 <main>
-  {{#sortable-group tagName="ol" onChange="update" as |group|}}
-    {{#each model.items as |item|}}
-      {{#sortable-item tagName="li" model=item group=group handle=".handle"}}
+  {{#sortable-group tagName="ol" direction='x' onChange="update" as |group|}}
+    {{#each model as |item|}}
+      {{#sortable-item tagName="li" model=item group=group}}
         {{item}}
-        <span class="handle">&vArr;</span>
       {{/sortable-item}}
     {{/each}}
   {{/sortable-group}}
@@ -17,7 +16,7 @@
   <p>
     <code>
       model.items:<br>
-      {{#each model.items as |item|}}
+      {{#each model as |item|}}
         {{item}}
       {{/each}}
     </code>

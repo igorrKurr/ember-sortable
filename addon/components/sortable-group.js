@@ -5,7 +5,8 @@ const a = A;
 
 export default Component.extend({
   layout: layout,
-
+  defaultDirection: 'y',
+  direction: 'y',
   /**
     @property items
     @type Ember.NativeArray
@@ -18,22 +19,34 @@ export default Component.extend({
     @property itemPosition
     @type Number
   */
-  itemPosition: computed(function() {
+
+  _getFirstItemPosition: function(direction ){
     let element = this.element;
     let stooge = $('<span style="position: absolute" />');
-    let result = stooge.prependTo(element).position().top;
+    let result;
+    if(direction === 'y') {
+      result = stooge.prependTo(element).position().top;
+    }
+    if(direction === 'x') {
+      result = stooge.prependTo(element).position().left;
+    }
 
     stooge.remove();
 
     return result;
+  },
+
+  itemPosition: computed(function() {
+    return this._getFirstItemPosition(this.get('direction'));
   }).volatile(),
 
   /**
     @property sortedItems
     @type Array
   */
-  sortedItems: computed('items.@each.y', function() {
-    return a(this.get('items')).sortBy('y');
+
+  sortedItems: computed('items.@each.y', 'items.@each.x', function() {
+    return a(this.get('items')).sortBy(this.get('direction'));
   }),
 
   /**
@@ -74,18 +87,25 @@ export default Component.extend({
   */
   update() {
     let sortedItems = this.get('sortedItems');
-    let y = this._itemPosition;
+    let position = this._itemPosition;
 
     // Just in case we haven’t called prepare first.
-    if (y === undefined) {
-      y = this.get('itemPosition');
+    if (position === undefined) {
+      position = this.get('itemPosition');
     }
 
     sortedItems.forEach(item => {
       if (!get(item, 'isDragging')) {
-        set(item, 'y', y);
+        set(item, this.get('direction'), position);
       }
-      y += get(item, 'height');
+      let dimension;
+      if (this.get('direction') === 'y') {
+       dimension = 'height'; 
+      }
+      if (this.get('direction') === 'x') {
+       dimension = 'width'; 
+      }
+      position += get(item, dimension);
     });
   },
 
@@ -111,7 +131,7 @@ export default Component.extend({
         items.invoke('thaw');
       });
     });
-
+      console.log('DSKDJSDUHWUWUWYU', this.get("onChange"))
     this.sendAction('onChange', models);
   }
 });

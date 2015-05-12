@@ -125,6 +125,18 @@ export default Mixin.create({
     return this._y;
   }).volatile(),
 
+  x: computed(function(_, value) {
+    if (arguments.length === 2 && value !== this._x) {
+      this._x = value;
+      this._scheduleApplyPosition();
+    }
+
+    if (this._x === undefined) {
+      this._x = this.element.offsetLeft;
+    }
+
+    return this._x;
+  }).volatile(),
   /**
     Height of the item including margins.
 
@@ -137,6 +149,11 @@ export default Mixin.create({
     return height + marginBottom;
   }).volatile(),
 
+  width: computed(function() {
+    let width = this.$().outerWidth();
+    let marginRight = parseFloat(this.$().css('margin-right'));
+    return width + marginRight;
+  }).volatile(),
   /**
     @method didInsertElement
   */
@@ -174,6 +191,7 @@ export default Mixin.create({
 
     this.$().css({ transition: 'none' });
     this.$().height(); // Force-apply styles
+    this.$().width(); // Force-apply styles
   },
 
   /**
@@ -184,6 +202,7 @@ export default Mixin.create({
     if (!el) { return; }
 
     delete this._y;
+    delete this._x;
     el.css({ transform: '' });
   },
 
@@ -211,17 +230,35 @@ export default Mixin.create({
     event.preventDefault();
     event.stopPropagation();
 
-    if (this.get('isBusy')) { return; }
+    let drag; 
 
-    let dragOrigin = getY(event);
-    let elementOrigin = this.get('y');
+    if (this.get('group.direction') === 'y') {
+      if (this.get('isBusy')) { return; }
 
-    let drag = event => {
-      let dy = getY(event) - dragOrigin;
-      let y = elementOrigin + dy;
+      let dragOrigin = getY(event);
+      let elementOrigin = this.get('y');
 
-      this._drag(y);
-    };
+      drag  = event => {
+        let dy = getY(event) - dragOrigin;
+        let y = elementOrigin + dy;
+
+        this._drag(y);
+      };
+    }
+
+    if (this.get('group.direction') === 'x') {
+      if (this.get('isBusy')) { return; }
+
+      let dragOrigin = getX(event);
+      let elementOrigin = this.get('x');
+
+      drag = event => {
+        let dx = getX(event) - dragOrigin;
+        let x = elementOrigin + dx;
+
+        this._drag(x);
+      };
+    }
 
     let drop = () => {
       $(window)
@@ -266,23 +303,38 @@ export default Mixin.create({
   _applyPosition() {
     if (!this.element) { return; }
 
-    let y = this.get('y');
-    let dy = y - this.element.offsetTop;
+    if(this.get('group.direction') ==='y') {
+      let y = this.get('y');
+      let dy = y - this.element.offsetTop;
 
-    this.$().css({
-      transform: `translateY(${dy}px)`
-    });
+      this.$().css({
+        transform: `translateY(${dy}px)`
+      });
+    }
+    if(this.get('group.direction') ==='x') {
+      let x = this.get('x');
+      let dx = x - this.element.offsetLeft;
+
+      this.$().css({
+        transform: `translateX(${dx}px)`
+      });
+    }
   },
 
   /**
     @method _drag
     @private
   */
-  _drag(y) {
+  _drag(dimension) {
     let updateInterval = this.get('updateInterval');
 
-    this.set('y', y);
+    if(this.get('group.direction') ==='y') {
+      this.set('y', dimension);
+    }
 
+    if(this.get('group.direction') ==='x') {
+      this.set('x', dimension);
+    }
     run.throttle(this, '_tellGroup', 'update', updateInterval);
   },
 
@@ -348,5 +400,17 @@ function getY(event) {
     return touch.screenY;
   } else {
     return event.pageY;
+  }
+}
+
+function getX(event) {
+  let originalEvent = event.originalEvent;
+  let touches = originalEvent && originalEvent.changedTouches;
+  let touch = touches && touches[0];
+
+  if (touch) {
+    return touch.screenX;
+  } else {
+    return event.pageX;
   }
 }
