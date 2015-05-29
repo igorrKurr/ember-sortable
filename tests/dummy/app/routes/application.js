@@ -12,11 +12,11 @@ export default Ember.Route.extend({
   },
 
   actions: {
-    updateVertical: function(newOrder) {
+    updateVertical: function(model, newOrder) {
       set(model, 'vertical', a(newOrder));
     },
     updateHorizontal: function(newOrder) {
-      this.set('model',  'horizontal', a(newOrder));
+      set(this, 'currentModel.horizontal', a(newOrder));
     },
   }
 });

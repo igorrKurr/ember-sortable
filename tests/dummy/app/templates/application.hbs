@@ -4,7 +4,7 @@
 
 <main>
   <h3>Vertical Sorting</h3>
-  {{#sortable-group tagName="ol" onChange="updateVertical" as |group|}}
+  {{#sortable-group tagName="ol" model=model onChange="updateVertical" as |group|}}
     {{#each model.vertical as |item|}}
       {{#sortable-item tagName="li" model=item group=group handle=".handle"}}
         {{item}}
