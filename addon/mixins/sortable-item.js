@@ -1,6 +1,7 @@
 import Ember from 'ember';
-const { Mixin, $, computed, run } = Ember;
+const { Mixin, $, computed, run, Logger, } = Ember;
 const { Promise } = Ember.RSVP;
+const { warn } = Logger;
 
 export default Mixin.create({
   classNames: ['sortable-item'],
@@ -74,11 +75,16 @@ export default Mixin.create({
     @property isAnimated
     @type Boolean
   */
-  isAnimated: computed(function() {
-    let el = this.$();
-    let property = el.css('transition-property');
+  isAnimated: computed({
+    get: function() {
+      let el = this.$();
+      let property = el.css('transition-property');
 
-    return /all|transform/.test(property);
+      return /all|transform/.test(property);
+    },
+    set: function(){
+     warn('`isAnimated` is read only'); 
+    }
   }).volatile(),
 
   /**
@@ -87,23 +93,28 @@ export default Mixin.create({
     @property transitionDuration
     @type Number
   */
-  transitionDuration: computed(function() {
-    let el = this.$();
-    let rule = el.css('transition-duration');
-    let match = rule.match(/([\d\.]+)([ms]*)/);
+  transitionDuration: computed({
+    get: function() {
+      let el = this.$();
+      let rule = el.css('transition-duration');
+      let match = rule.match(/([\d\.]+)([ms]*)/);
 
-    if (match) {
-      let value = parseFloat(match[1]);
-      let unit = match[2];
+      if (match) {
+        let value = parseFloat(match[1]);
+        let unit = match[2];
 
-      if (unit === 's') {
-        value = value * 1000;
+        if (unit === 's') {
+          value = value * 1000;
+        }
+
+        return value;
       }
 
-      return value;
+      return 0;
+    },
+    set: function() {
+     warn('`transitionDuration` is read only'); 
     }
-
-    return 0;
   }).volatile(),
 
   /**
@@ -112,30 +123,46 @@ export default Mixin.create({
     @property y
     @type Number
   */
-  y: computed(function(_, value) {
-    if (arguments.length === 2 && value !== this._y) {
+  y: computed({
+    get: function() {
+      if (this._y === undefined) {
+        this._y = this.element.offsetTop;
+      }
+
+      return this._y;
+    },
+    set: function(_, value) {
+      if (value === this._y) {
+        return this._y;
+      }
       this._y = value;
       this._scheduleApplyPosition();
-    }
-
-    if (this._y === undefined) {
-      this._y = this.element.offsetTop;
-    }
-
-    return this._y;
+      return value;
+    },
   }).volatile(),
 
-  x: computed(function(_, value) {
-    if (arguments.length === 2 && value !== this._x) {
+  /**
+    Horizontal position of the item.
+
+    @property x
+    @type Number
+  */
+  x: computed({
+    get: function() {
+      if (this._x === undefined) {
+        this._x = this.element.offsetLeft;
+      }
+
+      return this._x;
+    },
+    set: function(_, value) {
+      if (value === this._x) {
+        return this._x;
+      }
       this._x = value;
       this._scheduleApplyPosition();
-    }
-
-    if (this._x === undefined) {
-      this._x = this.element.offsetLeft;
-    }
-
-    return this._x;
+      return value;
+    },
   }).volatile(),
   /**
     Height of the item including margins.
@@ -143,16 +170,26 @@ export default Mixin.create({
     @property height
     @type Number
   */
-  height: computed(function() {
-    let height = this.$().outerHeight();
-    let marginBottom = parseFloat(this.$().css('margin-bottom'));
-    return height + marginBottom;
+  height: computed({
+    get: function() {
+      let height = this.$().outerHeight();
+      let marginBottom = parseFloat(this.$().css('margin-bottom'));
+      return height + marginBottom;
+    }
   }).volatile(),
 
-  width: computed(function() {
-    let width = this.$().outerWidth();
-    let marginRight = parseFloat(this.$().css('margin-right'));
-    return width + marginRight;
+  /**
+    Width of the item.
+
+    @property height
+    @type Number
+  */
+  width: computed({
+    get: function() {
+      let width = this.$().outerWidth();
+      let marginRight = parseFloat(this.$().css('margin-right'));
+      return width + marginRight;
+    }
   }).volatile(),
   /**
     @method didInsertElement
@@ -402,7 +439,13 @@ function getY(event) {
     return event.pageY;
   }
 }
+/**
+  Gets the x offset for a given event.
 
+  @method getX
+  @return {Number}
+  @private
+*/
 function getX(event) {
   let originalEvent = event.originalEvent;
   let touches = originalEvent && originalEvent.changedTouches;

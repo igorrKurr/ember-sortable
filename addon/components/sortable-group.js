@@ -1,12 +1,18 @@
 import Ember from 'ember';
 import layout from '../templates/components/sortable-group';
-const { $, A, Component, computed, get, set, run } = Ember;
+const { $, A, Component, computed, get, set, run, Logger, } = Ember;
+const { warn } = Logger;
 const a = A;
 const NO_MODEL = {};
 
 export default Component.extend({
   layout: layout,
 
+  /**
+    @property direction
+    @type string
+    @default y
+  */
   direction: 'y',
   /**
     @property model
@@ -19,15 +25,19 @@ export default Component.extend({
     @property items
     @type Ember.NativeArray
   */
-  items: computed(() => { return a(); }),
+  items: computed({
+    get: function() {
+      return a(); 
+    },
+    set: function(){
+     warn('`items` is read only'); 
+    }
+  }), 
   /**
-    Vertical position for the first item.
-
-    @property itemPosition
-    @type Number
+    @method _getFirstItemPosition
+    @private
   */
-
-  _getFirstItemPosition: function(direction ){
+  _getFirstItemPosition: function(direction) {
     let element = this.element;
     let stooge = $('<span style="position: absolute" />');
     let result;
@@ -43,8 +53,19 @@ export default Component.extend({
     return result;
   },
 
-  itemPosition: computed(function() {
-    return this._getFirstItemPosition(this.get('direction'));
+  /**
+    Position for the first item.
+
+    @property itemPosition
+    @type Number
+  */
+  itemPosition: computed({
+    get: function() {
+      return this._getFirstItemPosition(this.get('direction'));
+    },
+    set: function(){
+     warn('`itemPosition` is read only'); 
+    }
   }).volatile(),
 
   /**
@@ -52,8 +73,13 @@ export default Component.extend({
     @type Array
   */
 
-  sortedItems: computed('items.@each.y', 'items.@each.x', function() {
-    return a(this.get('items')).sortBy(this.get('direction'));
+  sortedItems: computed('items.@each.y', 'items.@each.x', {
+    get: function() {
+      return a(this.get('items')).sortBy(this.get('direction'));
+    },
+    set: function(){
+     warn('`sortedItems` is read only'); 
+    }
   }),
 
   /**
