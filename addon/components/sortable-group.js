@@ -29,8 +29,8 @@ export default Component.extend({
     get: function() {
       return a(); 
     },
-    set: function(){
-     warn('`items` is read only'); 
+    set: function(_, value){
+     return a(value);
     }
   }), 
   /**

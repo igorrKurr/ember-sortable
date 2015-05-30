@@ -5,6 +5,7 @@ const { Component, run } = Ember;
 
 const MockComponent = Component.extend(SortableItemMixin);
 const MockGroup = Ember.Object.extend({
+  direction: 'y',
   registerItem(item) {
     this.item = item;
   },

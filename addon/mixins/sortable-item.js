@@ -132,12 +132,10 @@ export default Mixin.create({
       return this._y;
     },
     set: function(_, value) {
-      if (value === this._y) {
-        return this._y;
+      if (value !== this._y) {
+        this._y = value;
+        this._scheduleApplyPosition();
       }
-      this._y = value;
-      this._scheduleApplyPosition();
-      return value;
     },
   }).volatile(),
 
@@ -161,7 +159,6 @@ export default Mixin.create({
       }
       this._x = value;
       this._scheduleApplyPosition();
-      return value;
     },
   }).volatile(),
   /**
@@ -340,7 +337,7 @@ export default Mixin.create({
   _applyPosition() {
     if (!this.element) { return; }
 
-    if(this.get('group.direction') ==='y') {
+    if(this.get('group.direction') === 'y') {
       let y = this.get('y');
       let dy = y - this.element.offsetTop;
 
@@ -348,7 +345,7 @@ export default Mixin.create({
         transform: `translateY(${dy}px)`
       });
     }
-    if(this.get('group.direction') ==='x') {
+    if(this.get('group.direction') === 'x') {
       let x = this.get('x');
       let dx = x - this.element.offsetLeft;
 
