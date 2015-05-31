@@ -154,11 +154,10 @@ export default Mixin.create({
       return this._x;
     },
     set: function(_, value) {
-      if (value === this._x) {
-        return this._x;
+      if (value !== this._x) {
+        this._x = value;
+        this._scheduleApplyPosition();
       }
-      this._x = value;
-      this._scheduleApplyPosition();
     },
   }).volatile(),
   /**
