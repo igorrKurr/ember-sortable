@@ -1,5 +1,5 @@
 import Ember from 'ember';
-const { A } = Ember;
+const { A, set } = Ember;
 const a = A;
 
 export default Ember.Route.extend({
@@ -11,4 +11,12 @@ export default Ember.Route.extend({
     
   },
 
+  actions: {
+    updateVertical: function(model, newOrder) {
+      set(model, 'vertical', a(newOrder));
+    },
+    updateHorizontal: function(newOrder) {
+      set(this, 'currentModel.horizontal', a(newOrder));
+    },
+  }
 });

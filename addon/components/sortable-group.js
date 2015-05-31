@@ -1,26 +1,43 @@
 import Ember from 'ember';
 import layout from '../templates/components/sortable-group';
-const { $, A, Component, computed, get, set, run } = Ember;
+const { $, A, Component, computed, get, set, run, Logger, } = Ember;
+const { warn } = Logger;
 const a = A;
+const NO_MODEL = {};
 
 export default Component.extend({
   layout: layout,
 
+  /**
+    @property direction
+    @type string
+    @default y
+  */
   direction: 'y',
+  /**
+    @property model
+    @type Any
+    @default null
+  */
+  model: NO_MODEL,
+
   /**
     @property items
     @type Ember.NativeArray
   */
-  items: computed(() => { return a(); }),
-
+  items: computed({
+    get: function() {
+      return a(); 
+    },
+    set: function(_, value){
+     return a(value);
+    }
+  }), 
   /**
-    Vertical position for the first item.
-
-    @property itemPosition
-    @type Number
+    @method _getFirstItemPosition
+    @private
   */
-
-  _getFirstItemPosition: function(direction ){
+  _getFirstItemPosition: function(direction) {
     let element = this.element;
     let stooge = $('<span style="position: absolute" />');
     let result;
@@ -36,8 +53,19 @@ export default Component.extend({
     return result;
   },
 
-  itemPosition: computed(function() {
-    return this._getFirstItemPosition(this.get('direction'));
+  /**
+    Position for the first item.
+
+    @property itemPosition
+    @type Number
+  */
+  itemPosition: computed({
+    get: function() {
+      return this._getFirstItemPosition(this.get('direction'));
+    },
+    set: function(){
+     warn('`itemPosition` is read only'); 
+    }
   }).volatile(),
 
   /**
@@ -45,8 +73,13 @@ export default Component.extend({
     @type Array
   */
 
-  sortedItems: computed('items.@each.y', 'items.@each.x', function() {
-    return a(this.get('items')).sortBy(this.get('direction'));
+  sortedItems: computed('items.@each.y', 'items.@each.x', {
+    get: function() {
+      return a(this.get('items')).sortBy(this.get('direction'));
+    },
+    set: function(){
+     warn('`sortedItems` is read only'); 
+    }
   }),
 
   /**
@@ -114,7 +147,8 @@ export default Component.extend({
   */
   commit() {
     let items = this.get('sortedItems');
-    let models = items.mapBy('model');
+    let groupModel = this.get('model');
+    let itemModels = items.mapBy('model');
 
     delete this._itemPosition;
 
@@ -131,7 +165,11 @@ export default Component.extend({
         items.invoke('thaw');
       });
     });
-
-    this.sendAction('onChange', models);
+    
+    if (groupModel !== NO_MODEL) {
+      this.sendAction('onChange', groupModel, itemModels);
+    } else {
+      this.sendAction('onChange', itemModels);
+    }
   }
 });
